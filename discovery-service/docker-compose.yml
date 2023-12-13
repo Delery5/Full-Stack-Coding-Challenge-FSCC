@@ -1,0 +1,113 @@
+version: "3.8"
+services:
+  employe-service:
+    image: "delery/employe-service:s4"
+    container_name: employe-service
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      - eureka.client.service-url.defaultZone=http://discovery-service:8761/eureka/
+    depends_on:
+      - mysqldb
+      - discovery-service
+  mysqldb:
+    platform: linux/x86_64   #This must be here because it's on MAC instead of Windows
+    image: "mysql:5.7"
+    restart: always
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: employeedb
+      MYSQL_USER: delery
+      MYSQL_PASSWORD: delery
+      MYSQL_ROOT_PASSWORD: delery
+  discovery-service:
+    image: "delery/discovery-service:s4"
+    container_name: discovery-service
+    ports:
+      - 8761:8761
+  registration-service:
+    image: "delery/registrationservice:s4"
+    container_name: registration-service
+    restart: always
+    ports:
+      - "8082:8082"
+    environment:
+      - eureka.client.service-url.defaultZone=http://discovery-service:8761/eureka/
+    depends_on:
+      - mysqldb
+      - discovery-service
+  mysqldbregistration:
+    platform: linux/x86_64   #This must be here because it's on MAC instead of Windows
+    image: "mysql:5.7"
+    restart: always
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_DATABASE: registrationdb
+      MYSQL_USER: delery
+      MYSQL_PASSWORD: delery
+      MYSQL_ROOT_PASSWORD: delery
+  loginservice:
+    image: "delery/loginservice:s4"
+    container_name: login-service
+    restart: always
+    ports:
+      - "8083:8083"
+    environment:
+      - eureka.client.service-url.defaultZone=http://discovery-service:8761/eureka/
+    depends_on:
+      - mysqldb
+      - discovery-service
+  mysqldblogin:
+    platform: linux/x86_64   #This must be here because it's on MAC instead of Windows
+    image: "mysql:5.7"
+    restart: always
+    ports:
+      - "3309:3306"
+    environment:
+      MYSQL_DATABASE: logindb
+      MYSQL_USER: delery
+      MYSQL_PASSWORD: delery
+      MYSQL_ROOT_PASSWORD: delery
+  api-gateway:
+    image: "delery/api-gateway:s4"
+    container_name: api-gateway
+    restart: always
+    ports:
+      - "8085:8085"
+    environment:
+      - eureka.client.service-url.defaultZone=http://discovery-service:8761/eureka/
+    depends_on:
+      - discovery-service
+      - employe-service
+      - registration-service
+      - loginservice
+
+  zookeeper:
+    container_name: zookeeper
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    restart: on-failure
+  kafka:
+    container_name: kafka
+    image: confluentinc/cp-kafka:latest
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    restart: on-failure
+    depends_on:
+      - zookeeper
+
+
+
+
+
+# delery/employe-service:s4

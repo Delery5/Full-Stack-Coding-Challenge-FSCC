@@ -1,0 +1,77 @@
+server:
+  port: 8085
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: LOGIN-SERVICE
+          uri: lb://LOGIN-SERVICE
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - AuthenticationFilter
+
+
+        - id: REGISTRATION-SERVICE
+          uri: lb://REGISTRATION-SERVICE
+          predicates:
+            - Path=/api/registration/**
+          filters:
+            - AuthenticationFilter
+
+        - id: EMPLOYEE-SERVICE
+          uri: lb://EMPLOYEE-SERVICE
+          predicates:
+            - Path=/api/employee/**
+          filters:
+            - AuthenticationFilter
+
+  application:
+    name: api-gateway
+
+#eureka:
+#  client:
+#    serviceUrl:
+#      defaultZone: http://discovery-service:8761/eureka/
+
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULT-ZONE:http://localhost:8761/eureka}
+
+
+
+
+
+
+
+
+
+
+#spring:
+#  application:
+#    name: api-gateway
+#
+#  cloud:
+#    gateway:
+#      discovery:
+#        locator:
+#          enabled: true
+#
+#  #Discoery
+#  eureka:
+#    client:
+#      service-url:
+#        defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http//localhost:8761/eureka}
+
+
+
+# Eureka Client Service Name
+#spring.application.name= api-gateway
+#eureka.client.service-url.defaultZone=http://localhost:8761/eureka
+
+#server.port=8084
+
+# This allows API-Gateway to search for services on Eureka Server
+#spring.cloud.gateway.discovery.locator.enabled=true
