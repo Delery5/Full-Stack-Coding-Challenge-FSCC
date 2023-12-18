@@ -1,0 +1,103 @@
+# Deployment for loginservice
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loginservice-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loginservice
+  template:
+    metadata:
+      labels:
+        app: loginservice
+    spec:
+      containers:
+        - name: loginservice
+          image: delery/loginservice:s4
+          ports:
+            - containerPort: 8083
+          env:
+            - name: eureka.client.service-url.defaultZone
+              value: http://discovery-service:8761/eureka/
+            - name: spring.datasource.url
+              value: jdbc:mysql://mysqldblogin-service:3306/logindb
+            - name: spring.datasource.username
+              value: delery
+            - name: spring.datasource.password
+              value: delery
+            - name: spring.datasource.driver-class-name
+              value: com.mysql.cj.jdbc.Driver
+            - name: spring.jpa.hibernate.ddl-auto
+              value: update
+            - name: spring.jpa.show-sql
+              value: "true"
+            - name: spring.jpa.properties.hibernate.dialect
+              value: org.hibernate.dialect.MySQLDialect
+
+---
+
+# Service for loginservice
+apiVersion: v1
+kind: Service
+metadata:
+  name: loginservice-service
+spec:
+  selector:
+    app: loginservice
+  ports:
+    - protocol: TCP
+      port: 8083
+      targetPort: 8083
+  type: NodePort  # Change to LoadBalancer if using a cloud provider
+
+---
+
+# Deployment for mysqldblogin
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysqldblogin-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysqldblogin
+  template:
+    metadata:
+      labels:
+        app: mysqldblogin
+    spec:
+      containers:
+        - name: mysqldblogin
+          image: mysql:latest  # Consider using the latest MySQL version
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_DATABASE
+              value: logindb
+            - name: MYSQL_USER
+              value: delery
+            - name: MYSQL_PASSWORD
+              value: delery
+            - name: MYSQL_ROOT_PASSWORD
+              value: delery
+      restartPolicy: Always
+      # Add volume mounts, resources, etc. if needed
+
+---
+
+# Service for mysqldblogin
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysqldblogin-service
+spec:
+  selector:
+    app: mysqldblogin
+  ports:
+    - protocol: TCP
+      port: 3306  # Use the same port as MySQL container
+      targetPort: 3306
+  type: NodePort  # Change to LoadBalancer if using a cloud provider

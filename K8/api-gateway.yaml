@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+        - name: api-gateway
+          image: delery/api-gateway:s4
+          ports:
+            - containerPort: 8085
+          env:
+            - name: eureka.client.service-url.defaultZone
+              value: http://discovery-service:8761/eureka/
+            - name: EMPLOYEE_SERVICE_URI
+              value: http://employe-service:8081
+            - name: LOGIN_SERVICE_URI
+              value: http://login-service:8083
+            - name: REGISTRATION_SERVICE_URI
+              value: http://registration-service:8082
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+spec:
+  selector:
+    app: api-gateway
+  ports:
+    - protocol: TCP
+      port: 8085
+      targetPort: 8085
+  type: NodePort  # Use 'NodePort' if you want to expose it outside the cluster
+

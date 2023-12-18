@@ -4,7 +4,6 @@ import com.ibm.delery.registrationservice.dto.RegistrationDto;
 import com.ibm.delery.registrationservice.exception.EmployeeAlreadyApprovedException;
 import com.ibm.delery.registrationservice.exception.EmployeeAlreadyExistsException;
 import com.ibm.delery.registrationservice.exception.EmployeeNotFoundException;
-import com.ibm.delery.registrationservice.service.ConsumerService;
 import com.ibm.delery.registrationservice.service.impl.EmployeeRegistrationServiceImpl;
 import com.ibm.delery.registrationservice.service.impl.ProducerServiceImpl;
 import jakarta.validation.Valid;
@@ -22,15 +21,13 @@ public class RegistrationController {
 
     private final ProducerServiceImpl producerService;
 
-    private final ConsumerService consumerService;
 
     private final EmployeeRegistrationServiceImpl employeeRegistrationService;
 
 
 
-    public RegistrationController(ProducerServiceImpl producerService, ConsumerService consumerService, EmployeeRegistrationServiceImpl employeeRegistrationService) {
+    public RegistrationController(ProducerServiceImpl producerService, EmployeeRegistrationServiceImpl employeeRegistrationService) {
         this.producerService = producerService;
-        this.consumerService = consumerService;
         this.employeeRegistrationService = employeeRegistrationService;
     }
 

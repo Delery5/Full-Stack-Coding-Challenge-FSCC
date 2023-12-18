@@ -1,0 +1,100 @@
+# registration-service-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registration-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: registration-service
+  template:
+    metadata:
+      labels:
+        app: registration-service
+    spec:
+      containers:
+        - name: registration-service
+          image: delery/registrationservice:s4
+          ports:
+            - containerPort: 8082
+          env:
+            - name: eureka.client.service-url.defaultZone
+              value: http://discovery-service:8761/eureka/
+            - name: spring.datasource.url
+              value: jdbc:mysql://mysqldbregistration:3306/registrationdb
+            - name: spring.datasource.username
+              value: delery
+            - name: spring.datasource.password
+              value: delery
+            - name: spring.datasource.driver-class-name
+              value: com.mysql.cj.jdbc.Driver
+            - name: spring.jpa.hibernate.ddl-auto
+              value: update
+            - name: spring.jpa.show-sql
+              value: "true"
+            - name: spring.jpa.properties.hibernate.dialect
+              value: org.hibernate.dialect.MySQLDialect
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: registration-service
+spec:
+  selector:
+    app: registration-service
+  ports:
+    - protocol: TCP
+      port: 8082
+      targetPort: 8082
+  type: LoadBalancer  # Change to NodePort if needed
+
+---
+
+# mysqldbregistration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysqldbregistration
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysqldbregistration
+  template:
+    metadata:
+      labels:
+        app: mysqldbregistration
+    spec:
+      containers:
+        - name: mysqldbregistration
+          image: mysql:5.7
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_DATABASE
+              value: registrationdb
+            - name: MYSQL_USER
+              value: delery
+            - name: MYSQL_PASSWORD
+              value: delery
+            - name: MYSQL_ROOT_PASSWORD
+              value: delery
+      restartPolicy: Always
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysqldbregistration
+spec:
+  selector:
+    app: mysqldbregistration
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  type: LoadBalancer  # Change to NodePort if needed

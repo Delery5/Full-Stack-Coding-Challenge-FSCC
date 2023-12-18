@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: employe-service
+spec:
+  selector:
+    app: employe-service
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employe-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: employe-service
+  template:
+    metadata:
+      labels:
+        app: employe-service
+    spec:
+      containers:
+        - name: employe-service
+          image: delery/employe-service:s4
+          ports:
+            - containerPort: 8081
+          env:
+            - name: eureka.client.service-url.defaultZone
+              value: http://discovery-service:8761/eureka/
+            - name: spring.datasource.url
+              value: jdbc:mysql://mysqldb:3307/employeedb
+            - name: spring.datasource.username
+              value: delery
+            - name: spring.datasource.password
+              value: delery
+            - name: spring.datasource.driver-class-name
+              value: com.mysql.cj.jdbc.Driver
+            - name: spring.jpa.hibernate.ddl-auto
+              value: update
+            - name: spring.jpa.show-sql
+              value: "true"
+            - name: spring.jpa.properties.hibernate.dialect
+              value: org.hibernate.dialect.MySQLDialect
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysqldb
+spec:
+  selector:
+    app: mysqldb
+  ports:
+    - protocol: TCP
+      port: 3307
+      targetPort: 3306
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysqldb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysqldb
+  template:
+    metadata:
+      labels:
+        app: mysqldb
+    spec:
+      containers:
+        - name: mysqldb
+          image: mysql:5.7
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_DATABASE
+              value: employeedb
+            - name: MYSQL_USER
+              value: delery
+            - name: MYSQL_PASSWORD
+              value: delery
+            - name: MYSQL_ROOT_PASSWORD
+              value: delery
